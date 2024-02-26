@@ -1,0 +1,20 @@
+{
+  "name": "coze-to-gpt",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@koa/router": "^12.0.1",
+    "eventsource-parser": "^1.1.2",
+    "koa": "^2.15.0",
+    "koa-body": "^6.0.1",
+    "koa-compose": "^4.1.0"
+  },
+  "type": "module"
+}
