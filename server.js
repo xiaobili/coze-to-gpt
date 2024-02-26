@@ -2,14 +2,13 @@ import Koa from "koa";
 import Router from "@koa/router";
 import compose from "koa-compose";
 import { koaBody } from "koa-body";
-import { handleTimeStap, handleBase64, handleNewSession } from "./handles.js";
+import { handleTimeStap, handleBase64 } from "./handles.js";
 import https from "https";
 import { createParser } from "eventsource-parser";
 import fs from "fs";
 const app = new Koa();
 const router = new Router();
 const params = {};
-let createTime = null;
 
 // 全局异常处理
 const handleErrors = async (ctx, next) => {
@@ -50,14 +49,6 @@ router.post("/v1/chat/completions", async (ctx) => {
     )
   ) {
     console.log("new session");
-    const sessionid = ctx.req.headers.authorization.split(" ")[1];
-    await handleNewSession(
-      {
-        conversation_id: params.conversation_id,
-        scene: params.scene,
-      },
-      sessionid
-    );
     params.conversation_id =
       "7337495393033765890_7337496580645339154_2_" + handleTimeStap();
     params.local_message_id = handleBase64();
