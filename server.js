@@ -2,25 +2,19 @@ import Koa from "koa";
 import Router from "@koa/router";
 import compose from "koa-compose";
 import { koaBody } from "koa-body";
-import { handleTimeStap, handleBase64, handleNewSession } from "./handles.js";
+import {
+  handleTimeStap,
+  handleBase64,
+  handleNewSession,
+  handleErrors,
+  initParams,
+} from "./handles.js";
 import https from "https";
 import { createParser } from "eventsource-parser";
 import fs from "fs";
 const app = new Koa();
 const router = new Router();
 const params = {};
-
-// 全局异常处理
-const handleErrors = async (ctx, next) => {
-  try {
-    await next();
-  } catch (err) {
-    console.error("Error:", err.message);
-    ctx.status
-      ? (ctx.body = `${ctx.status} - ${ctx.message}`)
-      : (ctx.body = "500 - Internal Server Error");
-  }
-};
 
 // 主页路由
 router.get("/", async (ctx) => {
@@ -41,32 +35,13 @@ router.post("/v1/chat/completions", async (ctx) => {
     "Content-Encoding": "none",
   });
   // 获取 post 请求的 body
-  const { messages } = ctx.request.body;
-  if (
-    messages[0].role === "system" &&
-    messages[0].content.includes(
-      "Name the conversation based on the chat records.\n"
-    )
-  ) {
-    console.log("new session");
-    const sessionid = ctx.req.headers.authorization.split(" ")[1];
-    await handleNewSession(
-      {
-        conversation_id: params.conversation_id,
-        scene: params.scene,
-      },
-      sessionid
-    );
-    params.conversation_id =
-      "7337495393033765890_7337496580645339154_2_" + handleTimeStap();
-    params.local_message_id = handleBase64();
-  }
-  params.query = messages[messages.length - 1].content;
-  const newData = {
+  const { messages, model } = ctx.request.body;
+  // 返回的数据
+  const sseData = {
     id: null,
     object: "chat.completion.chunk",
-    created: null,
-    model: "gpt-3.5-turbo-16k-0613",
+    created: handleTimeStap(),
+    model: model,
     system_fingerprint: null,
     choices: [
       {
@@ -77,6 +52,7 @@ router.post("/v1/chat/completions", async (ctx) => {
       },
     ],
   };
+  // 远程服务器配置
   const options = {
     hostname: "www.coze.com",
     path: "/api/conversation/chat",
@@ -88,20 +64,21 @@ router.post("/v1/chat/completions", async (ctx) => {
       "Content-Length": Buffer.byteLength(JSON.stringify(params)),
     },
   };
+  params.query = messages[messages.length - 1].content;
   const sse = https.request(options);
   sse.on("response", async (res) => {
     const parser = createParser((event) => {
       if (event.event === "message") {
         const data = JSON.parse(event.data);
         if (data.message.type === "answer") {
-          newData.id = data.conversation_id;
-          newData.choices[0].delta.content = data.message.content;
+          sseData.id = data.conversation_id;
+          sseData.choices[0].delta.content = data.message.content;
           if (data.is_finish) {
-            newData.choices[0].finish_reason = "stop";
+            sseData.choices[0].finish_reason = "stop";
           } else {
-            newData.choices[0].finish_reason = null;
+            sseData.choices[0].finish_reason = null;
           }
-          ctx.res.write(`data:${JSON.stringify(newData)}\n\n`);
+          ctx.res.write(`data:${JSON.stringify(sseData)}\n\n`);
           if (data.is_finish) {
             ctx.res.end();
           }
@@ -119,6 +96,27 @@ router.post("/v1/chat/completions", async (ctx) => {
   });
   sse.on("error", async (e) => {
     console.error(`problem with request: ${e.message}`);
+  });
+  sse.on("close", async () => {
+    if (
+      messages[0].role === "system" &&
+      messages[0].content.includes(
+        "Name the conversation based on the chat records.\n"
+      )
+    ) {
+      console.log("new session");
+      const sessionid = ctx.req.headers.authorization.split(" ")[1];
+      await handleNewSession(
+        {
+          conversation_id: params.conversation_id,
+          scene: params.scene,
+        },
+        sessionid
+      );
+      params.conversation_id =
+        "7337495393033765890_7337496580645339154_2_" + handleTimeStap();
+      params.local_message_id = handleBase64();
+    }
   });
 
   sse.write(JSON.stringify(params));
@@ -140,20 +138,5 @@ app.use(all);
 // 启动Koa应用
 app.listen(3000, () => {
   console.log("Server started on port 3000");
-  initParams();
+  initParams(params);
 });
-
-const initParams = async () => {
-  params.bot_id = "7337496580645339154";
-  params.conversation_id =
-    "7337495393033765890_7337496580645339154_2_" + handleTimeStap();
-  params.local_message_id = handleBase64();
-  params.query = "";
-  params.bot_version = "1708713749830";
-  params.chat_history = [];
-  params.insert_history_message_list = [];
-  params.stream = true;
-  params.scene = 2;
-  params.content_type = "text";
-  params.extra = {};
-};
