@@ -38,13 +38,25 @@ const handleErrors = async (ctx, next) => {
 };
 
 const handleNewSession = async (params, sessionid) => {
-  await fetch("https://www.coze.com/api/conversation/create_section", {
+  await fetch("https://www.coze.com/api/conversation/break_message", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Cookie: `sessionid=${sessionid}`,
     },
     body: JSON.stringify(params),
+    credentials: "include",
+  })
+  await fetch("https://www.coze.com/api/conversation/create_section", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `sessionid=${sessionid}`,
+    },
+    body: JSON.stringify({
+      conversation_id: params.conversation_id,
+      scene: params.scene,
+    }),
     credentials: "include",
   });
 };
