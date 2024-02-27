@@ -1,5 +1,7 @@
 # Coze TO GPT
 
+> 中文版[README_zh-CN.md](README_zh-CN.md)
+
 ## Introduction
 This is a simple tool to convert a Coze API to a ChatGPT API. Totaly based on nodejs.
 
