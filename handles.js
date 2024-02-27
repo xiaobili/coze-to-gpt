@@ -23,8 +23,8 @@ const handleBase64 = () => {
 
 /**
  * 全局异常处理
- * @param {*} ctx
- * @param {*} next
+ * @param {Koa.ParameterizedContext} ctx
+ * @param {Koa.Next} next
  */
 const handleErrors = async (ctx, next) => {
   try {
@@ -37,6 +37,11 @@ const handleErrors = async (ctx, next) => {
   }
 };
 
+/**
+ * 清除上下文消息
+ * @param {Object} params
+ * @param {String} sessionid
+ */
 const handleNewSession = async (params, sessionid) => {
   await fetch("https://www.coze.com/api/conversation/break_message", {
     method: "POST",
@@ -46,7 +51,7 @@ const handleNewSession = async (params, sessionid) => {
     },
     body: JSON.stringify(params),
     credentials: "include",
-  })
+  });
   await fetch("https://www.coze.com/api/conversation/create_section", {
     method: "POST",
     headers: {
@@ -61,6 +66,10 @@ const handleNewSession = async (params, sessionid) => {
   });
 };
 
+/**
+ * 初始化请求参数
+ * @param {Object} params
+ */
 const initParams = async (params) => {
   params.bot_id = "7337496580645339154";
   params.conversation_id =
