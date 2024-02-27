@@ -15,6 +15,32 @@ import fs from "fs";
 const app = new Koa();
 const router = new Router();
 const params = {};
+const break_message = {
+  answer_message_id: null,
+  query_message_id: null,
+  scene: params.scene,
+  broken_pos: 0,
+  conversation_id: params.conversation_id,
+  local_message_id: params.local_message_id,
+};
+
+const createNewSession = async (ctx, next) => {
+  const { messages } = ctx.request.body;
+  const sessionid = ctx.req.headers.authorization.split(" ")[1];
+  if (
+    messages[0].role === "system" &&
+    messages.length === 2 &&
+    break_message.answer_message_id !== null &&
+    break_message.query_message_id !== null
+  ) {
+    console.log("new session");
+    await handleNewSession(break_message, sessionid);
+    params.conversation_id =
+      "7337495393033765890_7337496580645339154_2_" + handleTimeStap();
+    params.local_message_id = handleBase64();
+  }
+  await next();
+};
 
 // 主页路由
 router.get("/", async (ctx) => {
@@ -61,35 +87,11 @@ router.post("/v1/chat/completions", async (ctx) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Cookie: `sessionid=${sessionid}`
+      Cookie: `sessionid=${sessionid}`,
     },
   };
   params.query = messages[messages.length - 1].content;
   const sse = https.request(options);
-  const break_message = {
-    answer_message_id: null,
-    query_message_id: null,
-    scene: params.scene,
-    broken_pos: 0,
-    conversation_id: params.conversation_id,
-    local_message_id: params.local_message_id,
-  }
-
-  if (
-    messages[0].role === "system" &&
-    messages[0].content.includes(
-      "Name the conversation based on the chat records.\n"
-    )
-  ) {
-    console.log("new session");
-    await handleNewSession(
-      break_message,
-      sessionid
-    );
-    params.conversation_id =
-      "7337495393033765890_7337496580645339154_2_" + handleTimeStap();
-    params.local_message_id = handleBase64();
-  }
 
   sse.on("response", async (res) => {
     const parser = createParser((event) => {
@@ -106,8 +108,10 @@ router.post("/v1/chat/completions", async (ctx) => {
           ctx.res.write(`data:${JSON.stringify(sseData)}\n\n`);
           if (data.is_finish) {
             break_message.answer_message_id = data.message.reply_id;
-            break_message.query_message_id = data.message.message_id
-            break_message.broken_pos = parseInt(data.message.extra_info.output_tokens)
+            break_message.query_message_id = data.message.message_id;
+            break_message.broken_pos = parseInt(
+              data.message.extra_info.output_tokens
+            );
             ctx.res.end();
           }
         }
@@ -118,14 +122,14 @@ router.post("/v1/chat/completions", async (ctx) => {
       parser.feed(d);
     });
     res.on("end", () => {
-      console.log("res end");
+      console.log("response end", new Date().toLocaleString());
     });
   });
   sse.on("error", async (e) => {
     console.error(`problem with request: ${e.message}`);
   });
   sse.on("close", async () => {
-    console.log("close");
+    console.log("sse closed", new Date().toLocaleString());
   });
 
   sse.write(JSON.stringify(params));
@@ -137,6 +141,7 @@ router.post("/v1/chat/completions", async (ctx) => {
 const all = compose([
   handleErrors,
   koaBody(),
+  createNewSession,
   router.routes(),
   router.allowedMethods(),
 ]);
