@@ -25,6 +25,6 @@ This is a simple tool to convert a Coze API to a ChatGPT API. Totaly based on no
 11. save the setting and enjoy it
 
 ## Screenshot
-![alt text](<CleanShot 2024-02-26 at 23.33.26.png>)
+![alt text](assets/cleanshot01.png)
 
-![alt text](<CleanShot 2024-02-26 at 23.35.23.png>)
+![alt text](assets/cleanshot02.png)
