@@ -76,7 +76,7 @@ const initParams = async (params) => {
     "7337495393033765890_7337496580645339154_2_" + handleTimeStap();
   params.local_message_id = handleBase64();
   params.query = "";
-  params.bot_version = "1709030680810";
+  params.bot_version = "1709039055567";
   params.chat_history = [];
   params.insert_history_message_list = [];
   params.stream = true;
