@@ -11,7 +11,6 @@ import {
 } from "./handles.js";
 import https from "https";
 import { createParser } from "eventsource-parser";
-import fs from "fs";
 const app = new Koa();
 const router = new Router();
 const params = {};
