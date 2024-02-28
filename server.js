@@ -42,13 +42,6 @@ const createNewSession = async (ctx, next) => {
   await next();
 };
 
-// 主页路由
-router.get("/", async (ctx) => {
-  const data = await fs.promises.readFile("index.html");
-  ctx.type = "html";
-  ctx.body = data;
-});
-
 // 事件源路由
 router.post("/v1/chat/completions", async (ctx) => {
   ctx.respond = false;
@@ -88,6 +81,8 @@ router.post("/v1/chat/completions", async (ctx) => {
     headers: {
       "Content-Type": "application/json",
       Cookie: `sessionid=${sessionid}`,
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
     },
   };
   params.query = messages[messages.length - 1].content;

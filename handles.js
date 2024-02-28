@@ -48,6 +48,8 @@ const handleNewSession = async (params, sessionid) => {
     headers: {
       "Content-Type": "application/json",
       Cookie: `sessionid=${sessionid}`,
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
     },
     body: JSON.stringify(params),
     credentials: "include",
@@ -57,6 +59,8 @@ const handleNewSession = async (params, sessionid) => {
     headers: {
       "Content-Type": "application/json",
       Cookie: `sessionid=${sessionid}`,
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
     },
     body: JSON.stringify({
       conversation_id: params.conversation_id,
