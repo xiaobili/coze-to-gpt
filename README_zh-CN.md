@@ -1,5 +1,11 @@
 # Coze TO GPT
 
+## 通知
+
+COZE 官方 API 将要在*四月份*上线，想要更好的体验请使用官方 API
+
+![alt text](assets/cleanshot03.png)
+
 ## 简介
 
 这是一个用于将 Coze API 转换为 ChatGPT API 的简单工具，完全基于 nodejs。

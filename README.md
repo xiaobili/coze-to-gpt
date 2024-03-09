@@ -1,5 +1,11 @@
 # Coze TO GPT
 
+## Notice
+
+The official API of COZE will be released in *April*. For a better experience, please use the official API.
+
+![alt text](assets/cleanshot03.png)
+
 > [中文 README](README_zh-CN.md)
 
 ## Introduction
